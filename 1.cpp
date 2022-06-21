@@ -1,12 +1,4 @@
-#include <iostream>
-#include <fstream>
-#include <cstdlib>
-#include <ctime>
-#include <array>
-#include <vector>
-#include <deque>
-#include <set>
-#include <limits.h>
+#include <bits/stdc++.h>
 
 using namespace std;
 
@@ -115,6 +107,7 @@ void state_value(node *n)
 {
     int cur_x = n->pt.x, cur_y = n->pt.y;
     n->value = 0;
+    int doublelivethree = 0;
     int pos[36] = {0};
     pos[1] = board[cur_x - 4][cur_y], pos[2] = board[cur_x - 3][cur_y], pos[3] = board[cur_x - 2][cur_y], pos[4] = board[cur_x - 1][cur_y],                         //直上
         pos[5] = board[cur_x + 1][cur_y], pos[6] = board[cur_x + 2][cur_y], pos[7] = board[cur_x + 3][cur_y], pos[8] = board[cur_x + 4][cur_y],                     //直下
@@ -173,6 +166,23 @@ void state_value(node *n)
             {
                 n->value += 200000;
                 return;
+            }
+        }
+    }
+
+    //敵方雙活三
+    for (int j = 0; j <= 2; j = j + 2)
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            if (pos[3 + 8 * i + j] == 3 - player && pos[4 + 8 * i + j] == 3 - player)
+            {
+                if(doublelivethree)
+                {
+                    n->value += 50000;
+                    return;
+                }
+                doublelivethree = 1;
             }
         }
     }
