@@ -147,9 +147,9 @@ void state_value(node *n)
     //我方活四
     for (int i = 0; i < 4; i++)
     {
-        for (int j = 2; j <= 5; j++)
+        for (int j = 1; j <= 5; j++)
         {
-            if (pos[i * 8 + j] == player && pos[1 + i * 8 + j] == player && pos[2 + i * 8 + j] == player)
+            if (pos[i * 8 + j] == EMPTY && pos[1 + i * 8 + j] == player && pos[2 + i * 8 + j] == player && pos[3 + i*8  + j] == player && pos[4 + i*8 + j] == EMPTY)
             {
                 n->value += 300000;
                 return;
@@ -204,7 +204,7 @@ void state_value(node *n)
     {
         for (int j = 1; j <= 4; j++)
         {
-            if ((pos[i * 8 + j] == 3 - player || pos[4 + i * 8 + j] == 3 - player) && pos[1 + i * 8 + j] == player && pos[2 + i * 8 + j] == player && pos[3 + i * 8 + j] == player)
+            if (pos[1 + i * 8 + j] == player && pos[2 + i * 8 + j] == player && pos[3 + i * 8 + j] == player && ((pos[i * 8 + j] == 3 - player &&  pos[4 + i * 8 + j] == EMPTY) || (pos[i * 8 + j] == EMPTY && pos[4 + i * 8 + j] == 3 - player)))
             {
                 n->value += 2000;
             }
@@ -253,8 +253,8 @@ pair<Point, int> minimax(node *n, int depth)
     if (depth == 0)
     {
         state_value(n);
-        cout << "(" << n->pt.x << "," << n->pt.y << ")"
-             << ":" << n->value << endl;
+        /*cout << "(" << n->pt.x << "," << n->pt.y << ")"
+             << ":" << n->value << endl;*/
         return pair<Point, int>(n->pt, n->value);
     }
 
@@ -336,9 +336,61 @@ void write_valid_spot(std::ofstream &fout)
     fout.flush();
 }
 
-/*pair<Point, int> alphabeta(node *n, int depth, int alpha, int beta)
+pair<Point, int> alphabeta(node *n, int depth, int alpha, int beta)
 {
-}*/
+    if (depth == 0)
+    {
+        state_value(n);
+        /*cout << "(" << n->pt.x << "," << n->pt.y << ")"
+             << ":" << n->value << endl;*/
+        return pair<Point, int>(n->pt, n->value);
+    }
+
+    pair<Point, int> tmp;
+
+    if (depth % 2)
+    {
+        n->value = INT_MIN;
+        generator(n);
+        for (auto i : n->nextmove)
+        {
+            board[i->pt.x][i->pt.y] = player;
+            tmp = minimax(i, depth - 1);
+            board[i->pt.x][i->pt.y] = 0;
+            if (tmp.second > n->value)
+            {
+                n->value = tmp.second;
+                n->pt.x = i->pt.x;
+                n->pt.y = i->pt.y;
+            }
+            alpha = max(alpha,tmp.second);
+            if(alpha >= beta)
+                break;
+        }
+        return pair<Point, int>(n->pt, n->value);
+    }
+    else
+    {
+        n->value = INT_MAX;
+        generator(n);
+        for (auto i : n->nextmove)
+        {
+            board[i->pt.x][i->pt.y] = 3 - player;
+            tmp = minimax(i, depth - 1);
+            board[i->pt.x][i->pt.y] = 0;
+            if (tmp.second < n->value)
+            {
+                n->value = tmp.second;
+                n->pt.x = i->pt.x;
+                n->pt.y = i->pt.y;
+            }
+            beta = min(beta,tmp.second);
+            if(beta <= alpha)
+                break;
+        }
+        return pair<Point, int>(n->pt, n->value);
+    }
+}
 
 int main(int, char **argv)
 {
